@@ -207,6 +207,9 @@
         let rarityGrey = 0.2; // 20% base chance for grey circles
         let rarityYellow = 0.05; // 5% base chance for yellow circles
         let rarityLime = 0.1; // 10% base chance for lime circles
+        let rarityOrange = 0.005;  // 0.5% base chance for orange circles
+        let rarityPink = 0.0075;
+        let rarityTeal = 0.0005;
         let critChanceReduction = 1; // Crit chance reduction in percentage
         let baseCircleSpawnInterval = 2000; // Base circle spawn interval in milliseconds
         let circleSpawnInterval = baseCircleSpawnInterval; // Initial circle spawn interval
@@ -215,6 +218,26 @@
 
         // New Audio
         const audio = new Audio('Media/Audio/pop.mp3');
+
+
+        // Add event listeners for upgrade buttons
+        document.getElementById("upgradeButton").addEventListener("click", purchaseUpgrade);
+        document.getElementById("rarityUpgradeButton").addEventListener("click", purchaseRarityUpgrade);
+        document.getElementById("capacityUpgradeButton").addEventListener("click", purchaseCapacityUpgrade);
+        document.getElementById("speedUpgradeButton").addEventListener("click", purchaseSpeedUpgrade);
+        document.getElementById("critUpgradeButton").addEventListener("click", purchaseCritUpgrade);
+        document.getElementById("upgradeUpgradeButton").addEventListener("click", purchaseUpgradeUpgrade);
+        document.getElementById("saveButton").addEventListener("click", saveGame);
+        document.getElementById("loadButton").addEventListener("click", loadGame);
+
+        // Update upgrade costs
+        updateUpgradeCost();
+        updateRarityUpgradeCost();
+        updateCapacityUpgradeCost();
+        updateSpeedUpgradeCost();
+        updateCritUpgradeCost();
+        updateUpgradeUpgradeCost();
+        updateScore();
 
         function Circle(x, y, color, valueMultiplier) {
             this.x = x;
@@ -327,8 +350,16 @@
                 } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime) {
                     color = 'lime';
                     valueMultiplier = 2; // Lime circle is worth 5x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange) {
+                    color = 'orange';
+                    valueMultiplier = 50; // Orange circle is worth 5x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink) {
+                    color = 'pink';
+                    valueMultiplier = 15; // Pink circle is worth 15x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal) {
+                    color = 'teal';
+                    valueMultiplier = 500; // Teal circle is worth 500x more
                 }
-
 
                 const circle = new Circle(x, y, color, valueMultiplier);
                 circles.push(circle);
@@ -541,9 +572,10 @@
                 updateSpeedUpgradeCost();
                 updateCritUpgradeCost();
                 updateUpgradeUpgradeCost();
-                updateScore();
+                updateScore(); // Update displayed score after loading game data
             }
         }
+
 
         function displayRarity(rarity) {
             const rarityDisplay = document.getElementById('rarityDisplay');
