@@ -210,6 +210,8 @@
         let rarityOrange = 0.005;  // 0.5% base chance for orange circles
         let rarityPink = 0.0075;
         let rarityTeal = 0.0005;
+        let rarityPurple = 0.08;
+        let rarityAqua = 0.00008;
         let critChanceReduction = 1; // Crit chance reduction in percentage
         let baseCircleSpawnInterval = 2000; // Base circle spawn interval in milliseconds
         let circleSpawnInterval = baseCircleSpawnInterval; // Initial circle spawn interval
@@ -359,7 +361,14 @@
                 } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal) {
                     color = 'teal';
                     valueMultiplier = 500; // Teal circle is worth 500x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple) {
+                    color = 'purple';
+                    valueMultiplier = 150; // Teal circle is worth 500x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua) {
+                    color = 'aqua';
+                    valueMultiplier = 2000; // Teal circle is worth 500x more
                 }
+
 
                 const circle = new Circle(x, y, color, valueMultiplier);
                 circles.push(circle);
