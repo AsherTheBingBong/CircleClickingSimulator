@@ -207,6 +207,7 @@
         let rarityGrey = 0.2; // 20% base chance for grey circles
         let rarityYellow = 0.05; // 5% base chance for yellow circles
         let rarityLime = 0.1; // 10% base chance for lime circles
+        let rarityPink = 0.0075 // 15% base chance for pink circles
         let critChanceReduction = 1; // Crit chance reduction in percentage
         let baseCircleSpawnInterval = 2000; // Base circle spawn interval in milliseconds
         let circleSpawnInterval = baseCircleSpawnInterval; // Initial circle spawn interval
@@ -327,7 +328,12 @@
                 } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime) {
                     color = 'lime';
                     valueMultiplier = 2; // Lime circle is worth 5x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime rarityPink) {
+                    color = 'pink';
+                    valueMultiplier = 15; // Lime circle is worth 5x more
                 }
+
+
 
 
                 const circle = new Circle(x, y, color, valueMultiplier);
