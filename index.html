@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop-up Circles with Upgrade</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            border: 1px solid #000;
+        }
+
+        #topRightContent {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 32px;
+            color: red;
+        }
+
+        #circlesCounter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        #upgradeButton {
+            position: absolute;
+            bottom: 50px;
+            right: 10px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        #rarityUpgradeButton {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px;
+            font-size: 16px;
+            background-color: #ffa500;
+            color: white;
+            cursor: pointer;
+        }
+
+        #capacityUpgradeButton {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px;
+            font-size: 16px;
+            background-color: #ffcc00;
+            color: white;
+            cursor: pointer;
+        }
+
+        #speedUpgradeButton {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        #critUpgradeButton {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px;
+            font-size: 16px;
+            background-color: #ff0000;
+            color: white;
+            cursor: pointer;
+        }
+
+        #upgradeUpgradeButton {
+            position: absolute;
+            bottom: 10px;
+            right: 100px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #808080;
+            color: white;
+            cursor: pointer;
+        }
+
+        #saveButton {
+            position: absolute;
+            bottom: 10px;
+            left: 100px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #008CBA;
+            color: white;
+            cursor: pointer;
+        }
+
+        #loadButton {
+            position: absolute;
+            bottom: 10px;
+            left: 190px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #008CBA;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="topRightContent">0</div>
+    <div id="circlesCounter">Circles: 0</div>
+    <div id="upgradeButton" onclick="purchaseUpgrade()">Upgrade (Cost: <span id="upgradeCost">10</span> circles)</div>
+    <div id="rarityUpgradeButton" onclick="purchaseRarityUpgrade()">Rarity Upgrade (Cost: <span id="rarityUpgradeCost">20</span> circles)</div>
+    <div id="capacityUpgradeButton" onclick="purchaseCapacityUpgrade()">Capacity Upgrade (Cost: <span id="capacityUpgradeCost">5</span> circles)</div>
+    <div id="speedUpgradeButton" onclick="purchaseSpeedUpgrade()">Speed Upgrade (Cost: <span id="speedUpgradeCost">15</span> circles)</div>
+    <div id="critUpgradeButton" onclick="purchaseCritUpgrade()">Crit Upgrade (Cost: <span id="critUpgradeCost">25</span> circles)</div>
+    <div id="upgradeUpgradeButton" onclick="purchaseUpgradeUpgrade()">Upgrade Upgrade (Cost: <span id="upgradeUpgradeCost">300</span> circles)</div>
+    <div id="saveButton" onclick="saveGame()">Save</div>
+    <div id="loadButton" onclick="loadGame()">Load</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const circles = [];
+        let score = 0;
+        let tapValue = 1;
+        let upgradeCost = 10;
+        let rarityUpgradeCost = 20;
+        let capacityUpgradeCost = 5;
+        let speedUpgradeCost = 15;
+        let critUpgradeCost = 25;
+        let upgradeUpgradeCost = 300; // Cost of Upgrade Upgrade
+        let maxCircles = 100;
+        let rarityBlue = 0.01; // 1% base chance for blue circles
+        let rarityGreen = 0.001; // 0.1% base chance for green circles
+        let rarityRed = 0.0001; // 0.01% base chance for red circles
+        let rarityGrey = 0.2; // 20% base chance for grey circles
+        let rarityYellow = 0.05; // 5% base chance for yellow circles
+        let critChanceReduction = 1; // Crit chance reduction in percentage
+        let baseCircleSpawnInterval = 2000; // Base circle spawn interval in milliseconds
+        let circleSpawnInterval = baseCircleSpawnInterval; // Initial circle spawn interval
+
+        const circleRadius = 50; // Set the desired radius for all circles
+
+        // New Audio
+        const audio = new Audio('Media/Audio/pop.mp3');
+
+        function Circle(x, y, color, valueMultiplier) {
+            this.x = x;
+            this.y = y;
+            this.radius = circleRadius;
+            this.color = color;
+            this.valueMultiplier = valueMultiplier || 1;
+            this.isCritical = false;
+
+            this.draw = function() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                
+                if (this.color === 'red') {
+                    // Add a glowing effect to the red circle
+                    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                    gradient.addColorStop(0, 'red');
+                    gradient.addColorStop(0.8 + Math.sin(Date.now() / 300) * 0.1, 'rgba(255, 0, 0, 0.5)');
+                    ctx.fillStyle = gradient;
+                } else {
+                    ctx.fillStyle = this.color;
+                }
+                
+                ctx.fill();
+                ctx.closePath();
+
+                // Display rarity in the middle of the circle
+                ctx.font = '12px Arial';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const shortScore = shortenNumber(score);
+                ctx.fillText(shortScore, this.x, this.y);
+
+                // Display "Critical" text if the circle is critical
+                if (this.isCritical) {
+                    ctx.font = '18px Arial';
+                    ctx.fillStyle = 'red';
+                    ctx.fillText('Critical', this.x, this.y - this.radius - 10);
+                }
+            };
+
+            this.getRarityText = function() {
+                switch (this.color) {
+                    case 'blue':
+                        return 'Rare';
+                    case 'green':
+                        return 'Uncommon';
+                    case 'red':
+                        return 'Legendary';
+                    case 'grey':
+                        return 'Common';
+                    case 'yellow':
+                        return 'Semi-common';
+                    default:
+                        return 'Common';
+                }
+            };
+
+            this.isClicked = function(mouseX, mouseY) {
+                const distance = Math.sqrt(Math.pow(mouseX - this.x, 2) + Math.pow(mouseY - this.y, 2));
+                return distance <= this.radius;
+            };
+
+            this.showCriticalText = function() {
+                this.isCritical = true;
+                setTimeout(() => {
+                    this.isCritical = false;
+                }, 2000);
+            };
+        }
+
+        function shortenNumber(num) {
+            if (num >= 1000000 && num < 10000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 10000000 && num < 100000000) {
+                return (num / 1000000).toFixed(0) + 'M';
+            } else if (num >= 100000000 && num < 1000000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else {
+                return num.toString();
+            }
+        }
+
+        function createCircle() {
+            if (circles.length < maxCircles) {
+                const x = Math.random() * (canvas.width - 2 * circleRadius) + circleRadius;
+                const y = Math.random() * (canvas.height - 2 * circleRadius) + circleRadius;
+                let color = 'black';
+                let valueMultiplier = 1;
+
+                // Use rarity values to determine the chance of different colored circles
+                const random = Math.random();
+                if (random < rarityBlue) {
+                    color = 'blue';
+                    valueMultiplier = 10; // Blue circle is worth 10x more
+                } else if (random < rarityBlue + rarityGreen) {
+                    color = 'green';
+                    valueMultiplier = 100; // Green circle is worth 100x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed) {
+                    color = 'red';
+                    valueMultiplier = 1000; // Red circle is worth 1000x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey) {
+                    color = 'grey';
+                    valueMultiplier = 0.5; // Grey circle is worth half
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow) {
+                    color = 'yellow';
+                    valueMultiplier = 5; // Yellow circle is worth 5x more
+                }
+
+                const circle = new Circle(x, y, color, valueMultiplier);
+                circles.push(circle);
+
+                // Check for critical hit
+                const criticalHitChance = 0.01 - critChanceReduction; // 1% chance of critical hit, reduced by Crit Upgrade
+                if (Math.random() < criticalHitChance) {
+                    circle.showCriticalText();
+                    circle.valueMultiplier *= 4; // Quadruple the circle's value for a critical hit
+                }
+            }
+        }
+
+        function drawCircles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (const circle of circles) {
+                circle.draw();
+            }
+        }
+
+        function update() {
+            if (Date.now() % circleSpawnInterval < 20 && circles.length < maxCircles) {
+                createCircle();
+            }
+
+            drawCircles();
+            updateScore();
+            updateCirclesCounter();
+
+            requestAnimationFrame(update);
+        }
+
+        // Circle clicked here
+        function handleClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = circles.length - 1; i >= 0; i--) {
+                if (circles[i].isClicked(mouseX, mouseY)) {
+                    score += tapValue * circles[i].valueMultiplier;
+                    circles.splice(i, 1);
+
+                        // Play audio
+                        audio.play();
+
+                    break; // Remove only one circle per click
+                }
+            }
+        }
+
+        function updateScore() {
+            const topRightContent = document.getElementById('topRightContent');
+            topRightContent.textContent = shortenNumber(score);
+        }
+
+        function updateCirclesCounter() {
+            const circlesCounter = document.getElementById('circlesCounter');
+            circlesCounter.textContent = `Circles: ${circles.length}`;
+        }
+
+        function purchaseUpgrade() {
+            if (score >= upgradeCost) {
+                score -= upgradeCost;
+                tapValue *= 2; // Double the circles per tap
+                upgradeCost *= 3; // Triple the cost for the next upgrade
+                updateUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function purchaseRarityUpgrade() {
+            if (score >= rarityUpgradeCost) {
+                score -= rarityUpgradeCost;
+                rarityBlue += 0.01; // +1% chance for blue circles
+                rarityGreen += 0.001; // +0.1% chance for green circles
+                rarityRed += 0.0001; // +0.01% chance for red circles
+                rarityGrey -= 0.02; // -2% chance for grey circles
+                rarityYellow += 0.005; // +0.5% chance for yellow circles
+                rarityUpgradeCost *= 2; // Double the cost for the next rarity upgrade
+                updateRarityUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function purchaseCapacityUpgrade() {
+            if (score >= capacityUpgradeCost) {
+                score -= capacityUpgradeCost;
+                maxCircles += 10; // Increase the base capacity by 10
+                capacityUpgradeCost *= 2; // Double the cost for the next capacity upgrade
+                updateCapacityUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function purchaseSpeedUpgrade() {
+            if (score >= speedUpgradeCost) {
+                score -= speedUpgradeCost;
+                circleSpawnInterval -= 100; // Reduce the spawn interval by 100ms
+                speedUpgradeCost *= 2; // Double the cost for the next speed upgrade
+                updateSpeedUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function purchaseCritUpgrade() {
+            if (score >= critUpgradeCost) {
+                score -= critUpgradeCost;
+                critChanceReduction += 1; // Reduce crit rarity by 1%
+                critUpgradeCost *= 2; // Double the cost for the next crit upgrade
+                updateCritUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function purchaseUpgradeUpgrade() {
+            if (score >= upgradeUpgradeCost) {
+                score -= upgradeUpgradeCost;
+                // Here you can define how each upgrade will be more effective
+                // For example, double the effectiveness of the speed upgrade
+                circleSpawnInterval -= 50; // Reducing the spawn interval by 50ms in addition to the regular upgrade
+                rarityBlue += 0.01; // Increase the chance for blue circles by 1%
+                rarityGreen += 0.001; // Increase the chance for green circles by 0.1%
+                rarityRed += 0.0001; // Increase the chance for red circles by 0.01%
+                rarityGrey -= 0.02; // Decrease the chance for grey circles by 2%
+                rarityYellow += 0.005; // Increase the chance for yellow circles by 0.5%
+                // Similar changes can be made for other upgrades
+                upgradeUpgradeCost *= 5; // Increase the cost for the next upgrade upgrade
+                console.log("Upgrade upgrade purchased!");
+                updateUpgradeUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function updateUpgradeCost() {
+            const upgradeCostElement = document.getElementById('upgradeCost');
+            upgradeCostElement.textContent = shortenNumber(upgradeCost);
+        }
+
+        function updateRarityUpgradeCost() {
+            const rarityUpgradeCostElement = document.getElementById('rarityUpgradeCost');
+            rarityUpgradeCostElement.textContent = shortenNumber(rarityUpgradeCost);
+        }
+
+        function updateCapacityUpgradeCost() {
+            const capacityUpgradeCostElement = document.getElementById('capacityUpgradeCost');
+            capacityUpgradeCostElement.textContent = shortenNumber(capacityUpgradeCost);
+        }
+
+        function updateSpeedUpgradeCost() {
+            const speedUpgradeCostElement = document.getElementById('speedUpgradeCost');
+            speedUpgradeCostElement.textContent = shortenNumber(speedUpgradeCost);
+        }
+
+        function updateCritUpgradeCost() {
+            const critUpgradeCostElement = document.getElementById('critUpgradeCost');
+            critUpgradeCostElement.textContent = shortenNumber(critUpgradeCost);
+        }
+
+        function updateUpgradeUpgradeCost() {
+            const upgradeUpgradeCostElement = document.getElementById('upgradeUpgradeCost');
+            upgradeUpgradeCostElement.textContent = shortenNumber(upgradeUpgradeCost);
+        }
+
+        function saveGame() {
+            const savedData = {
+                score,
+                tapValue,
+                upgradeCost,
+                rarityUpgradeCost,
+                capacityUpgradeCost,
+                speedUpgradeCost,
+                critUpgradeCost,
+                upgradeUpgradeCost,
+                maxCircles,
+                rarityBlue,
+                rarityGreen,
+                rarityRed,
+                rarityGrey,
+                rarityYellow,
+                circleSpawnInterval,
+                critChanceReduction
+            };
+            localStorage.setItem('gameData', JSON.stringify(savedData));
+        }
+
+        function loadGame() {
+            const savedData = localStorage.getItem('gameData');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                score = parsedData.score || 0;
+                tapValue = parsedData.tapValue || 1;
+                upgradeCost = parsedData.upgradeCost || 10;
+                rarityUpgradeCost = parsedData.rarityUpgradeCost || 20;
+                capacityUpgradeCost = parsedData.capacityUpgradeCost || 5;
+                speedUpgradeCost = parsedData.speedUpgradeCost || 15;
+                critUpgradeCost = parsedData.critUpgradeCost || 25;
+                upgradeUpgradeCost = parsedData.upgradeUpgradeCost || 300;
+                maxCircles = parsedData.maxCircles || 100;
+                rarityBlue = parsedData.rarityBlue || 0.01;
+                rarityGreen = parsedData.rarityGreen || 0.001;
+                rarityRed = parsedData.rarityRed || 0.0001;
+                rarityGrey = parsedData.rarityGrey || 0.2;
+                rarityYellow = parsedData.rarityYellow || 0.05;
+                circleSpawnInterval = parsedData.circleSpawnInterval || baseCircleSpawnInterval;
+                critChanceReduction = parsedData.critChanceReduction || 1;
+                updateUpgradeCost();
+                updateRarityUpgradeCost();
+                updateCapacityUpgradeCost();
+                updateSpeedUpgradeCost();
+                updateCritUpgradeCost();
+                updateUpgradeUpgradeCost();
+                updateScore();
+            }
+        }
+
+        function displayRarity(rarity) {
+            const rarityDisplay = document.getElementById('rarityDisplay');
+            rarityDisplay.textContent = `Rarity: ${rarity}`;
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        canvas.addEventListener('click', handleClick);
+
+        // Initial setup
+        window.dispatchEvent(new Event('resize'));
+
+        update();
+    </script>
+</body>
+</html>
