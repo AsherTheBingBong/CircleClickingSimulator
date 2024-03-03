@@ -123,9 +123,54 @@
             color: white;
             cursor: pointer;
         }
+
+        #startScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            /* Change the image url below right here */
+            background-image: url('Media/Images/background-gif.gif');
+            background-size: 100% 100%;
+            background-position: center;
+            color: white;
+        }
+
+        #startScreen button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+
+        #startScreen button:hover {
+            background-color: #45a049;
+        }
+
+        #gameScreen {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
+    
+<!-- Start Screen -->
+<div id="startScreen">
+    <button onclick="initializeGame()">Start Game</button>
+</div>
+<!-- Start Screen -->
+
+<!-- Game Screen -->
+<div id="gameScreen" style="display:none;">
     <canvas id="canvas"></canvas>
     <div id="topRightContent">0</div>
     <div id="circlesCounter">Circles: 0</div>
@@ -139,6 +184,11 @@
     <div id="loadButton" onclick="loadGame()">Load</div>
 
     <script>
+        // Start Screen -> Game Screen Transition function
+        function initializeGame() {
+            document.getElementById("startScreen").style.display = "none";
+            document.getElementById("gameScreen").style.display = "block";
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const circles = [];
@@ -156,6 +206,7 @@
         let rarityRed = 0.0001; // 0.01% base chance for red circles
         let rarityGrey = 0.2; // 20% base chance for grey circles
         let rarityYellow = 0.05; // 5% base chance for yellow circles
+        let rarityLime = 0.1; // 10% base chance for lime circles
         let critChanceReduction = 1; // Crit chance reduction in percentage
         let baseCircleSpawnInterval = 2000; // Base circle spawn interval in milliseconds
         let circleSpawnInterval = baseCircleSpawnInterval; // Initial circle spawn interval
@@ -273,7 +324,11 @@
                 } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow) {
                     color = 'yellow';
                     valueMultiplier = 5; // Yellow circle is worth 5x more
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime) {
+                    color = 'lime';
+                    valueMultiplier = 2; // Lime circle is worth 5x more
                 }
+
 
                 const circle = new Circle(x, y, color, valueMultiplier);
                 circles.push(circle);
@@ -307,7 +362,6 @@
             requestAnimationFrame(update);
         }
 
-        // Circle clicked here
         function handleClick(event) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
@@ -318,8 +372,8 @@
                     score += tapValue * circles[i].valueMultiplier;
                     circles.splice(i, 1);
 
-                        // Play audio
-                        audio.play();
+                    // Play audio
+                    audio.play();
 
                     break; // Remove only one circle per click
                 }
@@ -507,6 +561,10 @@
         window.dispatchEvent(new Event('resize'));
 
         update();
+
+        }
     </script>
+    </div>
 </body>
 </html>
+ 
