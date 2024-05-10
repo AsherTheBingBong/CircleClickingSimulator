@@ -20,7 +20,7 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            font-size: 32px;
+            font-size: 48px;
             color: red;
         }
 
@@ -222,7 +222,7 @@
         let rarityPink = 0.0075;
         let rarityTeal = 0.0005;
         let rarityPurple = 0.0008;
-        let rarityAqua = 0.00008;
+        let rarityAqua = 0.004;
         let rarityMagenta = 0.00025;
         let rarityMaroon = 0.025;
         let rarityBrown = 0.35;
@@ -230,6 +230,8 @@
         let rarityOlive = 0.1;
         let rarityCoralXface = 0.00015;
         let rarityPalegreen = 0.00025;
+        let rarityLightblue = 0.075;
+        let rarityKhaki = 0.12;
         let critChanceReduction = 1; // Crit chance reduction in percentage
         let baseCircleSpawnInterval = 2000; // Base circle spawn interval in milliseconds
         let circleSpawnInterval = baseCircleSpawnInterval; // Initial circle spawn interval
@@ -386,28 +388,16 @@
                     valueMultiplier = 150; // Teal circle is worth 500x more
                 } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua) {
                     color = 'aqua';
-                    valueMultiplier = 2000; // Teal circle is worth 500x more
+                    valueMultiplier = 40; // Teal circle is worth 500x more
                 } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta) {
                     color = 'magenta';
-                    valueMultiplier = 750; // Teal circle is worth 500x more
-                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityMaroon) {
-                    color = 'maroon';
-                    valueMultiplier = 7.5; // Teal circle is worth 500x more
-                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityMaroon + rarityBrown) {
-                    color = 'brown';
-                    valueMultiplier = 0.75; // Teal circle is worth 500x more
-                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityMaroon + rarityBrown +  rarityLavender) {
-                    color = 'lavender';
-                    valueMultiplier = 20; // Teal circle is worth 500x more
-                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityMaroon + rarityBrown +  rarityLavender + rarityOlive) {
-                    color = 'olive';
-                    valueMultiplier = 0.25; // Teal circle is worth 500x more
-                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityMaroon + rarityBrown +  rarityLavender + rarityOlive + rarityCoralXface) {
-                    color = 'lightcoral';
-                    valueMultiplier = 900; // Teal circle is worth 500x more
-                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityMaroon + rarityBrown +  rarityLavender + rarityOlive + rarityCoralXface + rarityPalegreen) {
-                    color = 'palegreen';
-                    valueMultiplier = 75; // Teal circle is worth 500x more
+                    valueMultiplier = 750; // Teal circle is worth 500x 
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityLightblue) {
+                    color = 'lightblue';
+                    valueMultiplier = 3;
+                } else if (random < rarityBlue + rarityGreen + rarityRed + rarityGrey + rarityYellow + rarityLime + rarityOrange + rarityPink + rarityTeal + rarityPurple + rarityAqua + rarityMagenta + rarityLightblue + rarityKhaki) {
+                    color = 'khaki';
+                    valueMultiplier = 8;
                 }
                 ctx.fill();
                 ctx.closePath();
